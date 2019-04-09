@@ -1,0 +1,41 @@
+---
+# tasks file for lig-projects
+- name: Ensure dependencies are installed
+  apt:
+    name: python3-pip
+    state: present
+
+- name: Ensure PyMySQL is installed
+  pip:
+    name: pymysql
+    state: present
+
+- name: Ensure composer:1.8 image is present
+  docker_image:
+    name: composer
+    tag: 1.8
+    state: present
+
+- name: Ensure nginx:alpine is present
+  docker_image:
+    name: nginx
+    tag: alpine
+    state: present
+
+- name: Create nginx_home directory
+  file:
+    path: /root/nginx_home
+    owner: root
+    group: root
+    mode: 1000
+    state: directory
+
+- include_tasks: wp-project.yml
+  loop: "{{ wp_projects }}"
+  loop_control:
+    loop_var: project
+
+- include_tasks: laravel-project.yml
+  loop: "{{ laravel_projects }}"
+  loop_control:
+    loop_var: project

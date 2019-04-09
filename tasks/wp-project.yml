@@ -1,0 +1,61 @@
+---
+# deploy wp project
+- name: Create mysql user for {{ project.name }}
+  mysql_user:
+    name: "{{ project.name }}_user"
+    password: secret
+    login_user: root
+    login_password: secret
+    login_host: 127.0.0.1
+    login_port: 31103
+    state: present
+
+- name: Pull frontplate::node8-npm4-frp4 image
+  docker_image:
+    name: liginccojp/frontplate-cli-docker
+    tag: node8-npm4-frp4
+    state: present
+
+
+- name: Create {{ project.name }} nginx  directory
+  file:
+    path: /root/nginx_home/{{ project.name }}
+    owner: root
+    group: root
+    mode: 777
+    state: directory
+
+- name: Check if {{ project.name }} nginx conf already exist
+  stat:
+    path: /root/nginx_home/{{ project.name }}/default.conf
+  register: project_conf
+
+- name: Create new {{ project.name }} conf
+  template:
+    src: ../templates/wordpress.conf
+    dest: /root/nginx_home/{{ project.name }}/default.conf
+  when:  project_conf.stat.exists == false
+
+- name: Run {{ project.name }} nginx server
+  docker_container:
+    name: "{{ project.name }}_nginx"
+    image: nginx:alpine
+    volumes:
+      - /root/nginx_home/{{ project.name }}:/etc/nginx/conf.d
+      - /root/jenkins_home/workspace/{{ project.name }}:/projects/{{ project.name }}
+    links:
+      - php-{{ project.php }}-fpm:php-{{ project.php }}-fpm
+      - mysql-{{ project.mysql }}:mysql-{{ project.mysql }}
+    ports:
+      - "{{ project.port  }}:80"
+    state: started
+
+- name: Create nginx proxy pass for {{ project.name }}
+  template:
+    src: ../templates/proxy-pass.conf
+    dest: /etc/nginx/conf.d/{{ project.name }}.conf
+
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted

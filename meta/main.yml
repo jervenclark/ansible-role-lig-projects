@@ -1,0 +1,18 @@
+galaxy_info:
+  role_name: lig_projects
+  author: Jerven Clark Chua
+  description: Configures and deploy lig projects to web server from git repo
+  company:
+
+  license: BSD
+
+  min_ansible_version: 2.4
+
+  platforms:
+  - name: Ubuntu
+    versions:
+    - all
+
+  galaxy_tags:
+    - wp
+    - deployment
