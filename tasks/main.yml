@@ -39,3 +39,8 @@
   loop: "{{ laravel_projects }}"
   loop_control:
     loop_var: project
+
+- include_tasks: ejs-project.yml
+  loop: "{{ ejs_projects }}"
+  loop_control:
+    loop_var: project
